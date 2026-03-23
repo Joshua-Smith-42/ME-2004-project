@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List, Tuple
 from dataclasses import dataclass
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -31,32 +32,32 @@ class Track:
 
 class Car:
     def __init__(self, mass_kg: float, friction_coeffecient:float, track:Track, positions):
+        self.downforces = []
         self.mass = mass_kg
         self.friction_coeffecient: float = friction_coeffecient
         self.track = track
         self.positions = positions
-        velocities = np.gradient(positions)
-        tangential_accels = np.array(np.gradient(velocities))
+        self.velocities = np.gradient(positions)
+        tangential_accels = np.array(np.gradient(self.velocities))
         normal_accels = np.array([])
         for index, position in enumerate(positions):
             curvature = track.calculate_curvature(position)
-            normal_accel = velocities[index]**2/curvature
+            normal_accel = self.velocities[index]**2/curvature
             normal_accels = np.append(normal_accels, normal_accel)
         self.accelerations = np.sqrt(normal_accels**2 + tangential_accels**2)
 
     def calculate_downforce(self) -> float:
-        downforces = []
         gravitational_friction_force = self.track.GRAVITY*self.mass*self.friction_coeffecient
-        downforces = [accel * self.mass - gravitational_friction_force for accel in self.accelerations]
-        return max(downforces)
+        self.downforces = [accel * self.mass - gravitational_friction_force for accel in self.accelerations]
+        return max(self.downforces)
     
 race_track = Track([
     Segment(defined_on=(0,   300),  curvature=80),
-    Segment(defined_on=(300, 600),  curvature=1000),
+    Segment(defined_on=(300, 600),  curvature=16),
     Segment(defined_on=(600, 1000), curvature=50),
 ])
 
-positions = np.linspace(1,999,10)
+positions = np.arange(1,999,10)
 
 racecar = Car(
     mass_kg=700,
@@ -66,4 +67,7 @@ racecar = Car(
 )
 
 downforce = racecar.calculate_downforce()
+plt.plot(positions, racecar.velocities)
+plt.plot(positions, racecar.accelerations)
+plt.plot(positions, racecar.downforces)
 print(f"Peak downforce required: {downforce:.1f} N")
