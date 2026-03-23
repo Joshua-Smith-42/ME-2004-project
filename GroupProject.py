@@ -69,5 +69,5 @@ racecar = Car(
 downforce = racecar.calculate_downforce()
 plt.plot(positions, racecar.velocities)
 plt.plot(positions, racecar.accelerations)
-plt.plot(positions, racecar.downforces)
+plt.show()
 print(f"Peak downforce required: {downforce:.1f} N")
